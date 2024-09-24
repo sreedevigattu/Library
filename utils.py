@@ -27,7 +27,7 @@ def import_csv_data(file):
     file.seek(0)
     csv_file = TextIOWrapper(file.stream, encoding='utf-8')
     
-    required_fields = ['\ufeffAUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
+    required_fields = ['AUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
     
     try:
         csv_reader = csv.DictReader(csv_file)
@@ -40,7 +40,7 @@ def import_csv_data(file):
                     raise KeyError(f"Missing required fields: {', '.join(missing_fields)}")
                 
                 book = Book(
-                    author=row['\ufeffAUTHOR'],
+                    author=row['AUTHOR'],
                     title=row['TITLE'],                  
                     price=float(row['PRICE']) if row['PRICE'] else 0,
                     genre=row['GENRE'],
