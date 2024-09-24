@@ -34,11 +34,13 @@ def import_csv():
                 import_csv_data(file)
                 flash('CSV data imported successfully', 'success')
             except ValueError as e:
-                flash(f'Error importing CSV data: {str(e)}', 'error')
-                logger.error(f'CSV import error: {str(e)}')
+                error_message = str(e)
+                flash(f'Error importing CSV data: {error_message}', 'error')
+                logger.error(f'CSV import error: {error_message}')
             except Exception as e:
-                flash(f'Unexpected error during CSV import: {str(e)}', 'error')
-                logger.error(f'Unexpected CSV import error: {str(e)}')
+                error_message = str(e)
+                flash(f'Unexpected error during CSV import: {error_message}', 'error')
+                logger.error(f'Unexpected CSV import error: {error_message}')
             return redirect(url_for('index'))
     return render_template('import_csv.html')
 
