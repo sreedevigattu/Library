@@ -1,8 +1,8 @@
 import csv
 from io import TextIOWrapper
+from datetime import datetime
 from models import db, Book
 import logging
-from dateutil import parser as date_parser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,12 +27,16 @@ def import_csv_data(file):
     file.seek(0)
     csv_file = TextIOWrapper(file.stream, encoding='utf-8')
     
-    required_fields = ['AUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
+    required_fields = ['\ufeffAUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
+
+    print(f"required_fields {required_fields}")
     
     try:
         csv_reader = csv.DictReader(csv_file)
         
         for row_num, row in enumerate(csv_reader, start=1):
+            
+            print(row_num, row)
             try:
                 # Check if all required fields are present
                 missing_fields = [field for field in required_fields if field not in row]
@@ -40,14 +44,14 @@ def import_csv_data(file):
                     raise KeyError(f"Missing required fields: {', '.join(missing_fields)}")
                 
                 book = Book(
-                    author=row['AUTHOR'],
+                    author=row['\ufeffAUTHOR'],
                     title=row['TITLE'],
                     price=float(row['PRICE']),
                     genre=row['GENRE'],
                     age_group=row['AGE_GROUP'],
                     book_code=row['BOOK_CODE'],
                     acc_num=row['ACC_NUM'],
-                    date_of_addition=date_parser.parse(row['DATE_OF_ADDITION']).date()
+                    date_of_addition=datetime.strptime(row['DATE_OF_ADDITION'], '%d-%m-%Y').date()
                 )
                 db.session.add(book)
                 logger.info(f"Successfully processed row {row_num}")
