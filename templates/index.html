@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Book List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Author</th>
+            <th>Title</th>
+            <th>Price</th>
+            <th>Genre</th>
+            <th>Age Group</th>
+            <th>Book Code</th>
+            <th>Acc Num</th>
+            <th>Date of Addition</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book.author }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.price }}</td>
+            <td>{{ book.genre }}</td>
+            <td>{{ book.age_group }}</td>
+            <td>{{ book.book_code }}</td>
+            <td>{{ book.acc_num }}</td>
+            <td>{{ book.date_of_addition }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
