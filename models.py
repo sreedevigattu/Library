@@ -14,8 +14,8 @@ class Book(db.Model):
     price = Column(Float, nullable=False)
     genre = Column(String(50), nullable=False)
     age_group = Column(String(50), nullable=False)
-    book_code = Column(String(20), nullable=False)
-    acc_num = Column(String(20), unique=True, nullable=False)
+    book_code = Column(String(50), nullable=False)
+    acc_num = Column(String(50), unique=True, nullable=False)
     date_of_addition = Column(Date, nullable=False)
 
     def __repr__(self):
