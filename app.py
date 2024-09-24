@@ -28,6 +28,7 @@ def index():
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
     sort_by = request.args.get('sort_by', 'author')
+    sort_order = request.args.get('sort_order', 'asc')
     
     query = Book.query
     if author:
@@ -48,12 +49,15 @@ def index():
         query = query.filter(Book.date_of_addition <= date_parser.parse(date_to).date())
     
     if sort_by:
-        query = query.order_by(getattr(Book, sort_by))
+        column = getattr(Book, sort_by)
+        if sort_order == 'desc':
+            column = column.desc()
+        query = query.order_by(column)
     
     books = query.all()
     return render_template('index.html', books=books, author=author, title=title, genre=genre,
                            age_group=age_group, book_code=book_code, acc_num=acc_num,
-                           date_from=date_from, date_to=date_to, sort_by=sort_by)
+                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():
@@ -84,7 +88,6 @@ def import_csv():
 def add_book():
     if request.method == 'POST':
         try:
-            # Check database connection
             engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
             connection = engine.connect()
             connection.close()
