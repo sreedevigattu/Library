@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Book List</h2>
+<h2>Books</h2>
 <form method="GET" action="{{ url_for('index') }}">
     <label for="author">Author:</label>
     <input type="text" id="author" name="author" value="{{ author }}">
