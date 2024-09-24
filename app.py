@@ -44,6 +44,13 @@ def import_csv():
             return redirect(url_for('index'))
     return render_template('import_csv.html')
 
+@app.cli.command("update_schema")
+def update_schema():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+    print("Database schema updated successfully.")
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

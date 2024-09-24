@@ -27,7 +27,7 @@ def import_csv_data(file):
     file.seek(0)
     csv_file = TextIOWrapper(file.stream, encoding='utf-8')
     
-    required_fields = ['AUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
+    required_fields = ['\ufeffAUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
     
     try:
         csv_reader = csv.DictReader(csv_file)
@@ -40,25 +40,31 @@ def import_csv_data(file):
                     raise KeyError(f"Missing required fields: {', '.join(missing_fields)}")
                 
                 book = Book(
-                    author=row['AUTHOR'],
-                    title=row['TITLE'],
-                    price=float(row['PRICE']),
+                    author=row['\ufeffAUTHOR'],
+                    title=row['TITLE'],                  
+                    price=float(row['PRICE']) if row['PRICE'] else 0,
                     genre=row['GENRE'],
                     age_group=row['AGE_GROUP'],
                     book_code=row['BOOK_CODE'],
                     acc_num=row['ACC_NUM'],
-                    date_of_addition=date_parser.parse(row['DATE_OF_ADDITION']).date()
+                    date_of_addition= date_parser.parse('01-Jan-1999').date()
                 )
+                # Ensure the date format is correct or default to 01-Jan-1999
+                try:
+                    date_of_addition = date_parser.parse(row['DATE_OF_ADDITION']).date()
+                except (ValueError, TypeError):
+                    date_of_addition = date_parser.parse('01-Jan-1999').date()
+                book.date_of_addition = date_of_addition
                 db.session.add(book)
                 logger.info(f"Successfully processed row {row_num}")
             except KeyError as e:
-                logger.error(f"Row {row_num}: {str(e)}")
+                logger.error(f"Row {row_num}: {row} {str(e)}")
                 raise ValueError(f"Row {row_num}: Missing required field(s) - {str(e)}")
             except ValueError as e:
-                logger.error(f"Row {row_num}: Invalid data format - {str(e)}")
+                logger.error(f"Row {row_num}: {row} Invalid data format - {str(e)}")
                 raise ValueError(f"Row {row_num}: Invalid data format - {str(e)}")
             except Exception as e:
-                logger.error(f"Row {row_num}: Unexpected error - {str(e)}")
+                logger.error(f"Row {row_num}: {row} Unexpected error - {str(e)}")
                 raise ValueError(f"Row {row_num}: Unexpected error - {str(e)}")
     except csv.Error as e:
         logger.error(f"CSV parsing error: {str(e)}")
