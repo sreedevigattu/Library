@@ -4,6 +4,7 @@ from models import db, Book
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
+from sqlalchemy import create_engine
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -61,6 +62,11 @@ def import_csv():
 def add_book():
     if request.method == 'POST':
         try:
+            # Check database connection
+            engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+            connection = engine.connect()
+            connection.close()
+
             new_book = Book(
                 author=request.form['author'],
                 title=request.form['title'],
@@ -76,7 +82,12 @@ def add_book():
             flash('New book added successfully', 'success')
             return redirect(url_for('index'))
         except Exception as e:
-            flash(f'Error adding book: {str(e)}', 'error')
+            db.session.rollback()
+            error_message = str(e)
+            if "SSL connection has been closed unexpectedly" in error_message:
+                error_message += " (Database connection error. Please try again.)"
+            flash(f'Error adding book: {error_message}', 'error')
+            logger.error(f'Error adding book: {error_message}')
     return render_template('add_book.html')
 
 @app.route('/update_book/<int:id>', methods=['GET', 'POST'])
