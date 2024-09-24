@@ -5,6 +5,7 @@ from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
 from sqlalchemy import create_engine
+import psycopg2
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -66,6 +67,7 @@ def add_book():
             engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
             connection = engine.connect()
             connection.close()
+            logger.info("Database connection successful")
 
             new_book = Book(
                 author=request.form['author'],
@@ -81,13 +83,16 @@ def add_book():
             db.session.commit()
             flash('New book added successfully', 'success')
             return redirect(url_for('index'))
+        except psycopg2.OperationalError as e:
+            db.session.rollback()
+            error_message = f"Database connection error: {str(e)}"
+            logger.error(error_message)
+            flash(f'Error adding book: {error_message}', 'error')
         except Exception as e:
             db.session.rollback()
             error_message = str(e)
-            if "SSL connection has been closed unexpectedly" in error_message:
-                error_message += " (Database connection error. Please try again.)"
-            flash(f'Error adding book: {error_message}', 'error')
             logger.error(f'Error adding book: {error_message}')
+            flash(f'Error adding book: {error_message}', 'error')
     return render_template('add_book.html')
 
 @app.route('/update_book/<int:id>', methods=['GET', 'POST'])
@@ -120,6 +125,16 @@ def delete_book(id):
     except Exception as e:
         flash(f'Error deleting book: {str(e)}', 'error')
     return redirect(url_for('index'))
+
+@app.route('/test_db_connection')
+def test_db_connection():
+    try:
+        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+        connection = engine.connect()
+        connection.close()
+        return "Database connection successful", 200
+    except Exception as e:
+        return f"Database connection failed: {str(e)}", 500
 
 @app.cli.command("update_schema")
 def update_schema():
