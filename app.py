@@ -16,8 +16,20 @@ logger = logging.getLogger(__name__)
 
 @app.route('/')
 def index():
-    books = Book.query.all()
-    return render_template('index.html', books=books)
+    author = request.args.get('author', '')
+    title = request.args.get('title', '')
+    genre = request.args.get('genre', '')
+    
+    query = Book.query
+    if author:
+        query = query.filter(Book.author.ilike(f'%{author}%'))
+    if title:
+        query = query.filter(Book.title.ilike(f'%{title}%'))
+    if genre:
+        query = query.filter(Book.genre.ilike(f'%{genre}%'))
+    
+    books = query.all()
+    return render_template('index.html', books=books, author=author, title=title, genre=genre)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():
