@@ -33,14 +33,14 @@
 <table>
     <thead>
         <tr>
-            <th>Author</th>
-            <th>Title</th>
-            <th>Price</th>
-            <th>Genre</th>
-            <th>Age Group</th>
-            <th>Book Code</th>
-            <th>Acc Num</th>
-            <th>Date of Addition</th>
+            <th><a href="#" class="sort" data-sort="author">Author</a></th>
+            <th><a href="#" class="sort" data-sort="title">Title</a></th>
+            <th><a href="#" class="sort" data-sort="price">Price</a></th>
+            <th><a href="#" class="sort" data-sort="genre">Genre</a></th>
+            <th><a href="#" class="sort" data-sort="age_group">Age Group</a></th>
+            <th><a href="#" class="sort" data-sort="book_code">Book Code</a></th>
+            <th><a href="#" class="sort" data-sort="acc_num">Acc Num</a></th>
+            <th><a href="#" class="sort" data-sort="date_of_addition">Date of Addition</a></th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -65,4 +65,19 @@
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sortLinks = document.querySelectorAll('a.sort');
+    sortLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sortBy = this.dataset.sort;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('sort_by', sortBy);
+            window.location.href = currentUrl.toString();
+        });
+    });
+});
+</script>
 {% endblock %}

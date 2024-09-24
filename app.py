@@ -27,6 +27,7 @@ def index():
     acc_num = request.args.get('acc_num', '')
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
+    sort_by = request.args.get('sort_by', 'author')
     
     query = Book.query
     if author:
@@ -46,10 +47,13 @@ def index():
     if date_to:
         query = query.filter(Book.date_of_addition <= date_parser.parse(date_to).date())
     
+    if sort_by:
+        query = query.order_by(getattr(Book, sort_by))
+    
     books = query.all()
     return render_template('index.html', books=books, author=author, title=title, genre=genre,
                            age_group=age_group, book_code=book_code, acc_num=acc_num,
-                           date_from=date_from, date_to=date_to)
+                           date_from=date_from, date_to=date_to, sort_by=sort_by)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():
