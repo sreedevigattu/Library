@@ -22,6 +22,11 @@ def index():
     author = request.args.get('author', '')
     title = request.args.get('title', '')
     genre = request.args.get('genre', '')
+    age_group = request.args.get('age_group', '')
+    book_code = request.args.get('book_code', '')
+    acc_num = request.args.get('acc_num', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     query = Book.query
     if author:
@@ -30,9 +35,21 @@ def index():
         query = query.filter(Book.title.ilike(f'%{title}%'))
     if genre:
         query = query.filter(Book.genre.ilike(f'%{genre}%'))
+    if age_group:
+        query = query.filter(Book.age_group.ilike(f'%{age_group}%'))
+    if book_code:
+        query = query.filter(Book.book_code.ilike(f'%{book_code}%'))
+    if acc_num:
+        query = query.filter(Book.acc_num.ilike(f'%{acc_num}%'))
+    if date_from:
+        query = query.filter(Book.date_of_addition >= date_parser.parse(date_from).date())
+    if date_to:
+        query = query.filter(Book.date_of_addition <= date_parser.parse(date_to).date())
     
     books = query.all()
-    return render_template('index.html', books=books, author=author, title=title, genre=genre)
+    return render_template('index.html', books=books, author=author, title=title, genre=genre,
+                           age_group=age_group, book_code=book_code, acc_num=acc_num,
+                           date_from=date_from, date_to=date_to)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():

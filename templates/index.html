@@ -12,6 +12,21 @@
     <label for="genre">Genre:</label>
     <input type="text" id="genre" name="genre" value="{{ genre }}">
     
+    <label for="age_group">Age Group:</label>
+    <input type="text" id="age_group" name="age_group" value="{{ age_group }}">
+    
+    <label for="book_code">Book Code:</label>
+    <input type="text" id="book_code" name="book_code" value="{{ book_code }}">
+    
+    <label for="acc_num">Acc Num:</label>
+    <input type="text" id="acc_num" name="acc_num" value="{{ acc_num }}">
+    
+    <label for="date_from">Date From:</label>
+    <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+    
+    <label for="date_to">Date To:</label>
+    <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+    
     <button type="submit">Filter</button>
 </form>
 <a href="{{ url_for('add_book') }}">Add New Book</a>
