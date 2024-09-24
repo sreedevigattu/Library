@@ -9,7 +9,13 @@ logger = logging.getLogger(__name__)
 
 def read_first_5_lines(file):
     file.seek(0)
-    return [next(file).decode('utf-8') for _ in range(5)]
+    lines = []
+    for _ in range(5):
+        line = file.readline().decode('utf-8')
+        if not line:
+            break
+        lines.append(line)
+    return lines
 
 def import_csv_data(file):
     filename = file.filename
@@ -19,7 +25,7 @@ def import_csv_data(file):
     logger.info(f"First 5 lines of the CSV:\n{''.join(first_5_lines)}")
     
     file.seek(0)
-    csv_file = TextIOWrapper(file, encoding='utf-8')
+    csv_file = TextIOWrapper(file.stream, encoding='utf-8')
     
     required_fields = ['AUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
     
