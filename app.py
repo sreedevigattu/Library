@@ -1,8 +1,9 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from models import db, Book
 from utils import import_csv_data
 import logging
+from dateutil import parser as date_parser
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -56,6 +57,59 @@ def import_csv():
             return redirect(url_for('index'))
     return render_template('import_csv.html')
 
+@app.route('/add_book', methods=['GET', 'POST'])
+def add_book():
+    if request.method == 'POST':
+        try:
+            new_book = Book(
+                author=request.form['author'],
+                title=request.form['title'],
+                price=float(request.form['price']),
+                genre=request.form['genre'],
+                age_group=request.form['age_group'],
+                book_code=request.form['book_code'],
+                acc_num=request.form['acc_num'],
+                date_of_addition=date_parser.parse(request.form['date_of_addition']).date()
+            )
+            db.session.add(new_book)
+            db.session.commit()
+            flash('New book added successfully', 'success')
+            return redirect(url_for('index'))
+        except Exception as e:
+            flash(f'Error adding book: {str(e)}', 'error')
+    return render_template('add_book.html')
+
+@app.route('/update_book/<int:id>', methods=['GET', 'POST'])
+def update_book(id):
+    book = Book.query.get_or_404(id)
+    if request.method == 'POST':
+        try:
+            book.author = request.form['author']
+            book.title = request.form['title']
+            book.price = float(request.form['price'])
+            book.genre = request.form['genre']
+            book.age_group = request.form['age_group']
+            book.book_code = request.form['book_code']
+            book.acc_num = request.form['acc_num']
+            book.date_of_addition = date_parser.parse(request.form['date_of_addition']).date()
+            db.session.commit()
+            flash('Book updated successfully', 'success')
+            return redirect(url_for('index'))
+        except Exception as e:
+            flash(f'Error updating book: {str(e)}', 'error')
+    return render_template('update_book.html', book=book)
+
+@app.route('/delete_book/<int:id>', methods=['POST'])
+def delete_book(id):
+    book = Book.query.get_or_404(id)
+    try:
+        db.session.delete(book)
+        db.session.commit()
+        flash('Book deleted successfully', 'success')
+    except Exception as e:
+        flash(f'Error deleting book: {str(e)}', 'error')
+    return redirect(url_for('index'))
+
 @app.cli.command("update_schema")
 def update_schema():
     with app.app_context():
@@ -66,4 +120,4 @@ def update_schema():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

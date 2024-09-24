@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add New Book</h2>
+<form method="POST" action="{{ url_for('add_book') }}">
+    <div>
+        <label for="author">Author:</label>
+        <input type="text" id="author" name="author" required>
+    </div>
+    <div>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+    </div>
+    <div>
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" step="0.01" required>
+    </div>
+    <div>
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" name="genre" required>
+    </div>
+    <div>
+        <label for="age_group">Age Group:</label>
+        <input type="text" id="age_group" name="age_group" required>
+    </div>
+    <div>
+        <label for="book_code">Book Code:</label>
+        <input type="text" id="book_code" name="book_code" required>
+    </div>
+    <div>
+        <label for="acc_num">Acc Num:</label>
+        <input type="text" id="acc_num" name="acc_num" required>
+    </div>
+    <div>
+        <label for="date_of_addition">Date of Addition:</label>
+        <input type="date" id="date_of_addition" name="date_of_addition" required>
+    </div>
+    <button type="submit">Add Book</button>
+</form>
+<a href="{{ url_for('index') }}">Back to Book List</a>
+{% endblock %}
