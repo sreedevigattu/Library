@@ -93,10 +93,16 @@ def add_book():
             connection.close()
             logger.info("Database connection successful")
 
+            price = request.form['price'].strip()
+            if price == '' or not price.replace('.', '').isdigit():
+                price = 0
+            else:
+                price = float(price)
+
             new_book = Book(
                 author=request.form['author'],
                 title=request.form['title'],
-                price=float(request.form['price']),
+                price=price,
                 genre=request.form['genre'],
                 age_group=request.form['age_group'],
                 book_code=request.form['book_code'],
@@ -126,7 +132,12 @@ def update_book(id):
         try:
             book.author = request.form['author']
             book.title = request.form['title']
-            book.price = float(request.form['price'])
+            price = request.form['price'].strip()
+            if price == '' or not price.replace('.', '').isdigit():
+                price = 0
+            else:
+                price = float(price)
+            book.price = price
             book.genre = request.form['genre']
             book.age_group = request.form['age_group']
             book.book_code = request.form['book_code']

@@ -39,10 +39,17 @@ def import_csv_data(file):
                 if missing_fields:
                     raise KeyError(f"Missing required fields: {', '.join(missing_fields)}")
                 
+                # Handle empty or invalid price values
+                price = row['PRICE'].strip()
+                if price == '' or not price.replace('.', '').isdigit():
+                    price = 0
+                else:
+                    price = float(price)
+                
                 book = Book(
                     author=row['AUTHOR'],
                     title=row['TITLE'],                  
-                    price=float(row['PRICE']) if row['PRICE'] else 0,
+                    price=price,
                     genre=row['GENRE'],
                     age_group=row['AGE_GROUP'],
                     book_code=row['BOOK_CODE'],
