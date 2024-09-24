@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from models import db, Book
 from utils import import_csv_data
+import logging
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -9,6 +10,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.urandom(24)
 
 db.init_app(app)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @app.route('/')
 def index():
@@ -29,8 +33,12 @@ def import_csv():
             try:
                 import_csv_data(file)
                 flash('CSV data imported successfully', 'success')
-            except Exception as e:
+            except ValueError as e:
                 flash(f'Error importing CSV data: {str(e)}', 'error')
+                logger.error(f'CSV import error: {str(e)}')
+            except Exception as e:
+                flash(f'Unexpected error during CSV import: {str(e)}', 'error')
+                logger.error(f'Unexpected CSV import error: {str(e)}')
             return redirect(url_for('index'))
     return render_template('import_csv.html')
 
