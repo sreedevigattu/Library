@@ -203,7 +203,32 @@ def update_schema():
         db.create_all()
     print("Database schema updated successfully.")
 
+def add_default_genres():
+    default_genres = [
+        "100 SERIES - TODDLERS", "8.08 Science Fiction/Fantasy", "9.00 Reference - Not For Issue",
+        "8.02 Detective", "9.13 Nature/Environment", "7.01 Humour", "9.02 Hobbies",
+        "1.22 Hindi Books For Issue", "8.06 Literary Fiction", "9.03 History/India",
+        "6.51 Non Fiction English", "9.05 Literature And Arts", "8.03 Horror", "8.11 Graphic Novel",
+        "1.21 Kannada Books For Issue", "7.51 Non Fiction - Biography", "7.03 Adventure/Mystery",
+        "9.08 Science", "7.02 Science Fiction/Fantasy", "8.22 Fiction Hindi", "8.07 Romance",
+        "1.00 Reference - Not For Issue", "6.53 Non Fiction Hindi", "7.11 Graphic Novel",
+        "6.22 Fiction Hindi", "9.10 Miscellaneous", "1.01 English Books For Issue",
+        "6.21 Fiction Kannada", "8.10 Miscellaneous", "8.05 Indian", "6.01 Fiction English",
+        "9.11 Travel", "7.53 Non Fiction - Miscellaneous", "9.06 Philosophy, Spirituality And Religion",
+        "9.12 Sports", "9.09 Self Help", "6.52 Non Fiction Kannada", "8.01 Classics",
+        "6.24 Fiction Malayalam", "1.24 Malayalam Books For Issue", "1.20 Tamil Books For Issue",
+        "8.04 Humour", "7.10 Miscellaneous Fiction", "8.09 Thriller", "9.04 Business/Economics",
+        "6.11 Graphic Novel", "9.07 Psychology", "9.01 Auto/Biography"
+    ]
+    for genre_name in default_genres:
+        genre = Genre.query.filter_by(name=genre_name).first()
+        if not genre:
+            new_genre = Genre(name=genre_name)
+            db.session.add(new_genre)
+    db.session.commit()
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        add_default_genres()
     app.run(host='0.0.0.0', port=5000, debug=True)
