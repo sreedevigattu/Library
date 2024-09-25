@@ -63,7 +63,7 @@ def import_csv_data(file):
                     date_of_addition = date_parser.parse('01-Jan-1999').date()
                 book.date_of_addition = date_of_addition
                 db.session.add(book)
-                logger.info(f"Successfully processed row {row_num}")
+                logger.info(f"Successfully processed row {row_num} {row}")
             except KeyError as e:
                 logger.error(f"Row {row_num}: {row} {str(e)}")
                 raise ValueError(f"Row {row_num}: Missing required field(s) - {str(e)}")
