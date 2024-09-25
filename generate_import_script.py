@@ -38,20 +38,7 @@ try:
         conn.commit()
         logger.info("Books table created successfully.")
 
-    # Check the number of rows in the books table
-    cur.execute("SELECT COUNT(*) FROM books")
-    row_count = cur.fetchone()[0]
-    logger.info(f"Number of rows in the books table: {row_count}")
-
-    if row_count == 0:
-        logger.info("Books table is empty. Inserting sample data...")
-        with open('insert_sample_data.sql', 'r') as sample_data_file:
-            sample_data_sql = sample_data_file.read()
-        cur.execute(sample_data_sql)
-        conn.commit()
-        logger.info("Sample data inserted successfully.")
-
-    # Execute the SELECT query
+    # Execute the SELECT query to fetch all data
     cur.execute("SELECT * FROM books")
 
     # Fetch all rows
@@ -66,7 +53,7 @@ try:
     insert_statements = []
     for row in rows:
         values = []
-        for value in row[1:]:  # Skip the id column
+        for value in row:
             if isinstance(value, str):
                 value_updated = value.replace("'", "''")
                 values.append(f"'{value_updated}'")
@@ -77,7 +64,7 @@ try:
             else:
                 values.append(str(value))
 
-        columns = ', '.join(column_names[1:])  # Skip the id column
+        columns = ', '.join(column_names)
         values_str = ', '.join(values)
         insert_statements.append(
             f"INSERT INTO books ({columns}) VALUES ({values_str});")
