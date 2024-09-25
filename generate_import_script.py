@@ -26,6 +26,31 @@ try:
 
     logger.info("Connected successfully.")
 
+    # Check if the books table exists
+    cur.execute("SELECT to_regclass('public.books')")
+    table_exists = cur.fetchone()[0]
+
+    if not table_exists:
+        logger.info("Books table does not exist. Creating it...")
+        with open('create_table.sql', 'r') as create_table_file:
+            create_table_sql = create_table_file.read()
+        cur.execute(create_table_sql)
+        conn.commit()
+        logger.info("Books table created successfully.")
+
+    # Check the number of rows in the books table
+    cur.execute("SELECT COUNT(*) FROM books")
+    row_count = cur.fetchone()[0]
+    logger.info(f"Number of rows in the books table: {row_count}")
+
+    if row_count == 0:
+        logger.info("Books table is empty. Inserting sample data...")
+        with open('insert_sample_data.sql', 'r') as sample_data_file:
+            sample_data_sql = sample_data_file.read()
+        cur.execute(sample_data_sql)
+        conn.commit()
+        logger.info("Sample data inserted successfully.")
+
     # Execute the SELECT query
     cur.execute("SELECT * FROM books")
 
@@ -77,9 +102,9 @@ except Exception as e:
 
 finally:
     # Close the database connection
-    if cur:
+    if 'cur' in locals():
         cur.close()
-    if conn:
+    if 'conn' in locals():
         conn.close()
     logger.info("Database connection closed.")
 
