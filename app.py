@@ -4,7 +4,7 @@ from models import db, Book
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, func
 import psycopg2
 from flask_sqlalchemy import SQLAlchemy
 
@@ -61,9 +61,12 @@ def index():
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
     
+    total_books = db.session.query(func.count(Book.id)).scalar()
+    
     return render_template('index.html', books=books, pagination=pagination, author=author, title=title, genre=genre,
                            age_group=age_group, book_code=book_code, acc_num=acc_num,
-                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page)
+                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page,
+                           total_books=total_books)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():
