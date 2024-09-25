@@ -19,6 +19,10 @@ args = "Run Flask App"
 task = "workflow.run"
 args = "Export Data"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Generate Import Script"
+
 [[workflows.workflow]]
 name = "Run Flask App"
 author = "agent"
@@ -41,6 +45,17 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python export_data.py"
+
+[[workflows.workflow]]
+name = "Generate Import Script"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python generate_import_script.py"
 
 [deployment]
 run = ["sh", "-c", "python app.py"]
