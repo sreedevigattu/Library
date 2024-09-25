@@ -233,27 +233,3 @@ a.button:hover {
     border-radius: 4px;
     margin-right: 10px;
 }
-
-select[multiple] {
-    width: 100%;
-    min-width: 200px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #fff;
-    font-size: 14px;
-}
-
-select[multiple] option {
-    padding: 5px;
-}
-
-select[multiple]:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-}
-
-.form-group {
-    margin-bottom: 15px;
-}

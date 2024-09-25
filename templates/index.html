@@ -9,12 +9,8 @@
     <label for="title">Title:</label>
     <input type="text" id="title" name="title" value="{{ title }}">
     
-    <label for="genres">Genres:</label>
-    <select id="genres" name="genre" multiple>
-        {% for genre in all_genres %}
-            <option value="{{ genre.name }}" {% if genre.name in genres %}selected{% endif %}>{{ genre.name }}</option>
-        {% endfor %}
-    </select>
+    <label for="genre">Genre:</label>
+    <input type="text" id="genre" name="genre" value="{{ genre }}">
     
     <label for="age_group">Age Group:</label>
     <input type="text" id="age_group" name="age_group" value="{{ age_group }}">
@@ -45,7 +41,7 @@
 <table>
     <thead>
         <tr>
-            {% for column in ['author', 'title', 'price', 'genres', 'age_group', 'book_code', 'acc_num', 'date_of_addition'] %}
+            {% for column in ['author', 'title', 'price', 'genre', 'age_group', 'book_code', 'acc_num', 'date_of_addition'] %}
                 <th>
                     <a href="#" class="sort" data-sort="{{ column }}">
                         {{ column|capitalize }}
@@ -64,7 +60,7 @@
             <td>{{ book.author }}</td>
             <td>{{ book.title }}</td>
             <td>{{ book.price }}</td>
-            <td>{{ book.genres|map(attribute='name')|join(', ') }}</td>
+            <td>{{ book.genre }}</td>
             <td>{{ book.age_group }}</td>
             <td>{{ book.book_code }}</td>
             <td>{{ book.acc_num }}</td>

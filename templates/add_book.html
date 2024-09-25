@@ -16,12 +16,8 @@
         <input type="number" id="price" name="price" step="0.01" required>
     </div>
     <div>
-        <label for="genres">Genres:</label>
-        <select id="genres" name="genres" multiple required>
-            {% for genre in genres %}
-                <option value="{{ genre.id }}">{{ genre.name }}</option>
-            {% endfor %}
-        </select>
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" name="genre" required>
     </div>
     <div>
         <label for="age_group">Age Group:</label>

@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from models import db, Book, Genre
+from models import db, Book
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def index():
     author = request.args.get('author', '')
     title = request.args.get('title', '')
-    genres = request.args.getlist('genre')
+    genre = request.args.get('genre', '')
     age_group = request.args.get('age_group', '')
     book_code = request.args.get('book_code', '')
     acc_num = request.args.get('acc_num', '')
@@ -39,8 +39,8 @@ def index():
         query = query.filter(Book.author.ilike(f'%{author}%'))
     if title:
         query = query.filter(Book.title.ilike(f'%{title}%'))
-    if genres:
-        query = query.filter(Book.genres.any(Genre.name.in_(genres)))
+    if genre:
+        query = query.filter(Book.genre.ilike(f'%{genre}%'))
     if age_group:
         query = query.filter(Book.age_group.ilike(f'%{age_group}%'))
     if book_code:
@@ -60,12 +60,10 @@ def index():
     
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
-    all_genres = Genre.query.all()
     
-    return render_template('index.html', books=books, pagination=pagination, author=author, title=title, genres=genres,
+    return render_template('index.html', books=books, pagination=pagination, author=author, title=title, genre=genre,
                            age_group=age_group, book_code=book_code, acc_num=acc_num,
-                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page,
-                           all_genres=all_genres)
+                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():
@@ -111,17 +109,12 @@ def add_book():
                 author=request.form['author'],
                 title=request.form['title'],
                 price=price,
+                genre=request.form['genre'],
                 age_group=request.form['age_group'],
                 book_code=request.form['book_code'],
                 acc_num=request.form['acc_num'],
                 date_of_addition=date_parser.parse(request.form['date_of_addition']).date()
             )
-
-            # Handle multiple genres
-            genre_ids = request.form.getlist('genres')
-            genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
-            new_book.genres = genres
-
             db.session.add(new_book)
             db.session.commit()
             flash('New book added successfully', 'success')
@@ -136,8 +129,7 @@ def add_book():
             error_message = str(e)
             logger.error(f'Error adding book: {error_message}')
             flash(f'Error adding book: {error_message}', 'error')
-    genres = Genre.query.all()
-    return render_template('add_book.html', genres=genres)
+    return render_template('add_book.html')
 
 @app.route('/update_book/<int:id>', methods=['GET', 'POST'])
 def update_book(id):
@@ -152,23 +144,17 @@ def update_book(id):
             else:
                 price = float(price)
             book.price = price
+            book.genre = request.form['genre']
             book.age_group = request.form['age_group']
             book.book_code = request.form['book_code']
             book.acc_num = request.form['acc_num']
             book.date_of_addition = date_parser.parse(request.form['date_of_addition']).date()
-
-            # Handle multiple genres
-            genre_ids = request.form.getlist('genres')
-            genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
-            book.genres = genres
-
             db.session.commit()
             flash('Book updated successfully', 'success')
             return redirect(url_for('index'))
         except Exception as e:
             flash(f'Error updating book: {str(e)}', 'error')
-    genres = Genre.query.all()
-    return render_template('update_book.html', book=book, genres=genres)
+    return render_template('update_book.html', book=book)
 
 @app.route('/delete_book/<int:id>', methods=['POST'])
 def delete_book(id):
@@ -180,11 +166,6 @@ def delete_book(id):
     except Exception as e:
         flash(f'Error deleting book: {str(e)}', 'error')
     return redirect(url_for('index'))
-
-@app.route('/genres')
-def get_genres():
-    genres = Genre.query.all()
-    return jsonify([{'id': genre.id, 'name': genre.name} for genre in genres])
 
 @app.route('/test_db_connection')
 def test_db_connection():
@@ -203,32 +184,7 @@ def update_schema():
         db.create_all()
     print("Database schema updated successfully.")
 
-def add_default_genres():
-    default_genres = [
-        "100 SERIES - TODDLERS", "8.08 Science Fiction/Fantasy", "9.00 Reference - Not For Issue",
-        "8.02 Detective", "9.13 Nature/Environment", "7.01 Humour", "9.02 Hobbies",
-        "1.22 Hindi Books For Issue", "8.06 Literary Fiction", "9.03 History/India",
-        "6.51 Non Fiction English", "9.05 Literature And Arts", "8.03 Horror", "8.11 Graphic Novel",
-        "1.21 Kannada Books For Issue", "7.51 Non Fiction - Biography", "7.03 Adventure/Mystery",
-        "9.08 Science", "7.02 Science Fiction/Fantasy", "8.22 Fiction Hindi", "8.07 Romance",
-        "1.00 Reference - Not For Issue", "6.53 Non Fiction Hindi", "7.11 Graphic Novel",
-        "6.22 Fiction Hindi", "9.10 Miscellaneous", "1.01 English Books For Issue",
-        "6.21 Fiction Kannada", "8.10 Miscellaneous", "8.05 Indian", "6.01 Fiction English",
-        "9.11 Travel", "7.53 Non Fiction - Miscellaneous", "9.06 Philosophy, Spirituality And Religion",
-        "9.12 Sports", "9.09 Self Help", "6.52 Non Fiction Kannada", "8.01 Classics",
-        "6.24 Fiction Malayalam", "1.24 Malayalam Books For Issue", "1.20 Tamil Books For Issue",
-        "8.04 Humour", "7.10 Miscellaneous Fiction", "8.09 Thriller", "9.04 Business/Economics",
-        "6.11 Graphic Novel", "9.07 Psychology", "9.01 Auto/Biography"
-    ]
-    for genre_name in default_genres:
-        genre = Genre.query.filter_by(name=genre_name).first()
-        if not genre:
-            new_genre = Genre(name=genre_name)
-            db.session.add(new_genre)
-    db.session.commit()
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        add_default_genres()
     app.run(host='0.0.0.0', port=5000, debug=True)
