@@ -4,7 +4,7 @@ from models import db, Book, Genre
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
-from sqlalchemy import create_engine, and_
+from sqlalchemy import create_engine
 import psycopg2
 from flask_sqlalchemy import SQLAlchemy
 
@@ -40,7 +40,7 @@ def index():
     if title:
         query = query.filter(Book.title.ilike(f'%{title}%'))
     if genres:
-        query = query.filter(and_(*[Book.genres.any(Genre.name.strip() == genre.strip()) for genre in genres]))
+        query = query.filter(Book.genres.any(Genre.name.in_(genres)))
     if age_group:
         query = query.filter(Book.age_group.ilike(f'%{age_group}%'))
     if book_code:
@@ -117,6 +117,7 @@ def add_book():
                 date_of_addition=date_parser.parse(request.form['date_of_addition']).date()
             )
 
+            # Handle multiple genres
             genre_ids = request.form.getlist('genres')
             genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
             new_book.genres = genres
@@ -156,6 +157,7 @@ def update_book(id):
             book.acc_num = request.form['acc_num']
             book.date_of_addition = date_parser.parse(request.form['date_of_addition']).date()
 
+            # Handle multiple genres
             genre_ids = request.form.getlist('genres')
             genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
             book.genres = genres
@@ -194,6 +196,13 @@ def test_db_connection():
     except Exception as e:
         return f"Database connection failed: {str(e)}", 500
 
+@app.cli.command("update_schema")
+def update_schema():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+    print("Database schema updated successfully.")
+
 def add_default_genres():
     default_genres = [
         "100 SERIES - TODDLERS", "8.08 Science Fiction/Fantasy", "9.00 Reference - Not For Issue",
@@ -212,19 +221,11 @@ def add_default_genres():
         "6.11 Graphic Novel", "9.07 Psychology", "9.01 Auto/Biography"
     ]
     for genre_name in default_genres:
-        genre = Genre.query.filter_by(name_stripped=genre_name.strip()).first()
+        genre = Genre.query.filter_by(name=genre_name).first()
         if not genre:
             new_genre = Genre(name=genre_name)
             db.session.add(new_genre)
     db.session.commit()
-
-@app.cli.command("update_schema")
-def update_schema():
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-        add_default_genres()
-    print("Database schema updated successfully.")
 
 if __name__ == '__main__':
     with app.app_context():

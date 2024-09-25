@@ -31,12 +31,7 @@ class Book(db.Model):
 class Genre(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
-    name_stripped = Column(String(50), unique=True, nullable=False)
     books = relationship('Book', secondary=book_genre, back_populates='genres')
-
-    def __init__(self, name):
-        self.name = name
-        self.name_stripped = name.strip()
 
     def __repr__(self):
         return f'<Genre {self.name}>'
