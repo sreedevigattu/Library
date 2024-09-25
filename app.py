@@ -6,6 +6,7 @@ import logging
 from dateutil import parser as date_parser
 from sqlalchemy import create_engine
 import psycopg2
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -29,6 +30,9 @@ def index():
     date_to = request.args.get('date_to', '')
     sort_by = request.args.get('sort_by', 'author')
     sort_order = request.args.get('sort_order', 'asc')
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     query = Book.query
     if author:
@@ -54,10 +58,12 @@ def index():
             column = column.desc()
         query = query.order_by(column)
     
-    books = query.all()
-    return render_template('index.html', books=books, author=author, title=title, genre=genre,
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    books = pagination.items
+    
+    return render_template('index.html', books=books, pagination=pagination, author=author, title=title, genre=genre,
                            age_group=age_group, book_code=book_code, acc_num=acc_num,
-                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order)
+                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():

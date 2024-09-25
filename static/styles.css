@@ -145,7 +145,7 @@ footer {
     background-color: #34495e;
     color: #ecf0f1;
     text-align: center;
-    padding: 0.25rem 0;
+    padding: 0.125rem 0;
     font-size: 0.8rem;
     position: sticky;
     bottom: 0;
@@ -199,4 +199,37 @@ a.button:hover {
 
 .action-buttons form button:hover {
     background-color: #c0392b;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination a, .pagination strong, .pagination span {
+    color: #3498db;
+    padding: 8px 16px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    margin: 0 4px;
+    transition: background-color 0.3s;
+}
+
+.pagination a:hover {
+    background-color: #3498db;
+    color: white;
+}
+
+.pagination strong {
+    background-color: #3498db;
+    color: white;
+    border: 1px solid #3498db;
+}
+
+#per_page {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
 }
