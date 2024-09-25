@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from models import db, Book
+from models import db, Book, Genre
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def index():
     author = request.args.get('author', '')
     title = request.args.get('title', '')
-    genre = request.args.get('genre', '')
+    genres = request.args.getlist('genre')
     age_group = request.args.get('age_group', '')
     book_code = request.args.get('book_code', '')
     acc_num = request.args.get('acc_num', '')
@@ -39,8 +39,8 @@ def index():
         query = query.filter(Book.author.ilike(f'%{author}%'))
     if title:
         query = query.filter(Book.title.ilike(f'%{title}%'))
-    if genre:
-        query = query.filter(Book.genre.ilike(f'%{genre}%'))
+    if genres:
+        query = query.filter(Book.genres.any(Genre.name.in_(genres)))
     if age_group:
         query = query.filter(Book.age_group.ilike(f'%{age_group}%'))
     if book_code:
@@ -60,10 +60,12 @@ def index():
     
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
+    all_genres = Genre.query.all()
     
-    return render_template('index.html', books=books, pagination=pagination, author=author, title=title, genre=genre,
+    return render_template('index.html', books=books, pagination=pagination, author=author, title=title, genres=genres,
                            age_group=age_group, book_code=book_code, acc_num=acc_num,
-                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page)
+                           date_from=date_from, date_to=date_to, sort_by=sort_by, sort_order=sort_order, per_page=per_page,
+                           all_genres=all_genres)
 
 @app.route('/import_csv', methods=['GET', 'POST'])
 def import_csv():
@@ -109,12 +111,17 @@ def add_book():
                 author=request.form['author'],
                 title=request.form['title'],
                 price=price,
-                genre=request.form['genre'],
                 age_group=request.form['age_group'],
                 book_code=request.form['book_code'],
                 acc_num=request.form['acc_num'],
                 date_of_addition=date_parser.parse(request.form['date_of_addition']).date()
             )
+
+            # Handle multiple genres
+            genre_ids = request.form.getlist('genres')
+            genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
+            new_book.genres = genres
+
             db.session.add(new_book)
             db.session.commit()
             flash('New book added successfully', 'success')
@@ -129,7 +136,8 @@ def add_book():
             error_message = str(e)
             logger.error(f'Error adding book: {error_message}')
             flash(f'Error adding book: {error_message}', 'error')
-    return render_template('add_book.html')
+    genres = Genre.query.all()
+    return render_template('add_book.html', genres=genres)
 
 @app.route('/update_book/<int:id>', methods=['GET', 'POST'])
 def update_book(id):
@@ -144,17 +152,23 @@ def update_book(id):
             else:
                 price = float(price)
             book.price = price
-            book.genre = request.form['genre']
             book.age_group = request.form['age_group']
             book.book_code = request.form['book_code']
             book.acc_num = request.form['acc_num']
             book.date_of_addition = date_parser.parse(request.form['date_of_addition']).date()
+
+            # Handle multiple genres
+            genre_ids = request.form.getlist('genres')
+            genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
+            book.genres = genres
+
             db.session.commit()
             flash('Book updated successfully', 'success')
             return redirect(url_for('index'))
         except Exception as e:
             flash(f'Error updating book: {str(e)}', 'error')
-    return render_template('update_book.html', book=book)
+    genres = Genre.query.all()
+    return render_template('update_book.html', book=book, genres=genres)
 
 @app.route('/delete_book/<int:id>', methods=['POST'])
 def delete_book(id):
@@ -166,6 +180,11 @@ def delete_book(id):
     except Exception as e:
         flash(f'Error deleting book: {str(e)}', 'error')
     return redirect(url_for('index'))
+
+@app.route('/genres')
+def get_genres():
+    genres = Genre.query.all()
+    return jsonify([{'id': genre.id, 'name': genre.name} for genre in genres])
 
 @app.route('/test_db_connection')
 def test_db_connection():

@@ -1,6 +1,6 @@
 import csv
 from io import TextIOWrapper
-from models import db, Book
+from models import db, Book, Genre
 import logging
 from dateutil import parser as date_parser
 
@@ -27,7 +27,7 @@ def import_csv_data(file):
     file.seek(0)
     csv_file = TextIOWrapper(file.stream, encoding='utf-8')
     
-    required_fields = ['AUTHOR', 'TITLE', 'PRICE', 'GENRE', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
+    required_fields = ['AUTHOR', 'TITLE', 'PRICE', 'GENRES', 'AGE_GROUP', 'BOOK_CODE', 'ACC_NUM', 'DATE_OF_ADDITION']
     
     try:
         csv_reader = csv.DictReader(csv_file)
@@ -46,15 +46,25 @@ def import_csv_data(file):
                 else:
                     price = float(price)
                 
+                # Handle multiple genres
+                genre_names = [genre.strip() for genre in row['GENRES'].split(',')]
+                genres = []
+                for genre_name in genre_names:
+                    genre = Genre.query.filter_by(name=genre_name).first()
+                    if not genre:
+                        genre = Genre(name=genre_name)
+                        db.session.add(genre)
+                    genres.append(genre)
+                
                 book = Book(
                     author=row['AUTHOR'],
                     title=row['TITLE'],                  
                     price=price,
-                    genre=row['GENRE'],
                     age_group=row['AGE_GROUP'],
                     book_code=row['BOOK_CODE'],
                     acc_num=row['ACC_NUM'],
-                    date_of_addition= date_parser.parse('01-Jan-1999').date()
+                    date_of_addition=date_parser.parse('01-Jan-1999').date(),
+                    genres=genres
                 )
                 # Ensure the date format is correct or default to 01-Jan-1999
                 try:
