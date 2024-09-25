@@ -4,7 +4,7 @@ from models import db, Book
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import psycopg2
 from flask_sqlalchemy import SQLAlchemy
 
@@ -180,8 +180,23 @@ def test_db_connection():
 @app.cli.command("update_schema")
 def update_schema():
     with app.app_context():
-        db.drop_all()
-        db.create_all()
+        engine = db.engine
+        with engine.connect() as conn:
+            conn.execute(text("DROP TABLE IF EXISTS book CASCADE"))
+            conn.execute(text("""
+                CREATE TABLE book (
+                    id SERIAL PRIMARY KEY,
+                    author VARCHAR(100) NOT NULL,
+                    title VARCHAR(200) NOT NULL,
+                    price FLOAT NOT NULL,
+                    genre VARCHAR(50) NOT NULL,
+                    age_group VARCHAR(50) NOT NULL,
+                    book_code VARCHAR(50) NOT NULL,
+                    acc_num VARCHAR(50) UNIQUE NOT NULL,
+                    date_of_addition DATE NOT NULL
+                )
+            """))
+            conn.commit()
     print("Database schema updated successfully.")
 
 if __name__ == '__main__':
