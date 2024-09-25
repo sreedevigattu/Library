@@ -4,7 +4,7 @@ from models import db, Book, Genre
 from utils import import_csv_data
 import logging
 from dateutil import parser as date_parser
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_
 import psycopg2
 from flask_sqlalchemy import SQLAlchemy
 
@@ -40,7 +40,7 @@ def index():
     if title:
         query = query.filter(Book.title.ilike(f'%{title}%'))
     if genres:
-        query = query.filter(Book.genres.any(Genre.name.in_(genres)))
+        query = query.filter(and_(*[Book.genres.any(Genre.name == genre) for genre in genres]))
     if age_group:
         query = query.filter(Book.age_group.ilike(f'%{age_group}%'))
     if book_code:
@@ -117,7 +117,6 @@ def add_book():
                 date_of_addition=date_parser.parse(request.form['date_of_addition']).date()
             )
 
-            # Handle multiple genres
             genre_ids = request.form.getlist('genres')
             genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
             new_book.genres = genres
@@ -157,7 +156,6 @@ def update_book(id):
             book.acc_num = request.form['acc_num']
             book.date_of_addition = date_parser.parse(request.form['date_of_addition']).date()
 
-            # Handle multiple genres
             genre_ids = request.form.getlist('genres')
             genres = Genre.query.filter(Genre.id.in_(genre_ids)).all()
             book.genres = genres
